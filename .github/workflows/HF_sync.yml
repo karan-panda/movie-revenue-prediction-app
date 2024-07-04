@@ -1,4 +1,5 @@
 name: Sync to Hugging Face hub
+
 on:
   push:
     branches: [main]
@@ -9,12 +10,25 @@ on:
 jobs:
   sync-to-hub:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
           lfs: true
-      - name: Push to hub
+
+      - name: Install Git LFS
+        run: git lfs install
+
+      - name: Track large files with Git LFS
+        run: |
+          git lfs track "*.pkl"
+          git add .gitattributes
+          git add tuned_elastic_net.pkl
+          git commit -m "Track large files with Git LFS" || echo "No changes to commit"
+
+      - name: Push to Hugging Face hub
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: git push --force https://KaranPanda:$HF_TOKEN@huggingface.co/spaces/KaranPanda/movie-revenue-prediction-app main
+        run: git push --force https://KaranPanda:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/KaranPanda/movie-revenue-prediction-app main
